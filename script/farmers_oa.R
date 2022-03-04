@@ -28,7 +28,7 @@ str(blups)
 
 blups$geno <- as.character(blups$geno)
 
-# deal with the farm nam data
+# deal with the farmnam data
 head(farmnam)
 
 names(farmnam) <- make_clean_names(names(farmnam))
@@ -75,25 +75,61 @@ dat$id <- as.integer(dat$id2)
 
 dat$gender <- ifelse(grepl("f_", dat$farmer), "F", "M")
 
-# test sample
-#dat <- dat[grepl("^N|RF", dat$geno), ]
-
+#.....................................................
+#.....................................................
+# Sample the data ####
+# PlackettLuce cannot work with so many combinations 
+# so we sample the data to deal with this issue
+dat <- dat[grepl("^N|RF", dat$family), ]
 dat <- dat[!is.na(dat$geno), ]
 
+unique(dat$family)
+
+# retain only the items (genotypes) that are present in 
+# both datasets
 items <- unique(c(dat$geno, blups$geno))
 
 items <- items[items %in% dat$geno & items %in% blups$geno]
 
+length(items)
+
+# filter the data to keep only the items that are present in both
 dat <- dat[dat$geno %in% items, ]
 
 blups <- blups[blups$geno %in% items, ]
 
+# make the sample by family
+datS <- split(dat, dat$family)
+
+RF <- which(names(datS) %in% "RF")
+
+samplesize <- 25
+
+datS[-RF] <- lapply(datS[-RF], function(x){
+  set.seed(4032022)
+  # take a sample
+  genoS <- sample(unique(x$geno), samplesize)
+  # filter to keep sampled items
+  x <- x[x$geno %in% genoS, ]
+  # rename items to avoid computation issues in PlackettLuce
+  x$geno <- paste0(x$family, "-" , as.integer(as.factor(x$geno)))
+  x
+})
+
+datS <- do.call("rbind", datS)
+
+length(unique(datS$geno))
+
+itemsS <- unique(datS$geno)
+
 # make pairwise comparisons
-cc <- gosset:::.combn2(items, 2)
+cc <- gosset:::.combn2(itemsS, 2)
 
-dat <- split(dat, dat$id)
+ncol(cc)
 
-pair_oa <- lapply(dat, function(y) {
+datS <- split(datS, datS$id)
+
+pair_oa <- lapply(datS, function(y) {
   # get the rankings as pair comparisons
   # ties are not considered and will be NA's
   pair <- apply(cc, 2, function(x){
@@ -123,18 +159,16 @@ pair_oa <- lapply(dat, function(y) {
 pair_oa
 
 pair <- do.call("rbind", pair_oa)
-dat <- do.call("rbind", dat)
-
-id <- names(pair_oa)
+datS <- do.call("rbind", datS)
 
 # convert this matrix into a paircomp object
-pair <- psychotools::paircomp(pair, labels = as.character(items))
+pair <- psychotools::paircomp(pair, labels = as.character(itemsS))
 
 # pairwises into grouped rankings 
 G <- as.grouped_rankings(pair)
 
 # dataset with rank features 
-rank_features <- as.data.frame(dat[!duplicated(dat$id), c("gender","location")])
+rank_features <- as.data.frame(datS[!duplicated(datS$id), c("gender","location")])
 rank_features[1:2] <- lapply(rank_features[1:2], as.factor)
 
 # dataset with the genotypes features 
@@ -153,7 +187,7 @@ str(pld)
 pl1 <- pltree(G ~ gender + location,
               data = pld,
               alpha = 0.05,
-              minsize = 10,
+              minsize = 20,
               verbose = TRUE)
 
 
@@ -177,9 +211,5 @@ pl2 <- pltree(G ~ gender + location,
 summary(pl2)
 
 save(pl1, pl2, file = "output/pladmm_model.rda")
-
-
-
-
 
 
