@@ -1,7 +1,7 @@
 # Coerce farmers evaluation to rankings
 library("PlackettLuce")
 library("janitor")
-library("tidyr")
+library("tidyverse")
 library("gosset")
 
 # read the data
@@ -57,8 +57,11 @@ head(dat)
 dat$geno[grepl("local_check", dat$geno)] <- "localcheck"
 
 # add ril and family as separated colunms
-dat <- dat %>%
-  separate(geno, c("family","ril"), sep = "_", remove = FALSE)
+dat %>%
+  separate(geno, c("family","ril"), sep = "_", remove = FALSE) ->
+  dat
+
+dat
 
 unique(dat$family)
 
@@ -68,12 +71,25 @@ dat$family[!is.na(f)] <- paste0("N", f[!is.na(f)])
 
 unique(dat$family)
 
+# do the same with blups
+blups %>% 
+  separate(geno, c("family","ril"), sep = "_", remove = FALSE) ->
+  blups
+
+f <- as.integer(blups$family)
+
+blups$family[!is.na(f)] <- paste0("N", f[!is.na(f)])
+
+unique(blups$family)
+
 # get an id which is the combination of farmer , repetition and location
 dat$id2 <- as.factor(paste(dat$farmer, dat$rep, dat$location, sep = "_"))
 
 dat$id <- as.integer(dat$id2)
 
 dat$gender <- ifelse(grepl("f_", dat$farmer), "F", "M")
+
+length(unique(dat$id))
 
 #.....................................................
 #.....................................................
@@ -103,20 +119,29 @@ datS <- split(dat, dat$family)
 
 RF <- which(names(datS) %in% "RF")
 
-samplesize <- 25
+# samplesize <- 25
+# datS[-RF] <- lapply(datS[-RF], function(x){
+#   set.seed(4032022)
+#   # take a sample
+#   genoS <- sample(unique(x$geno), samplesize)
+#   # filter to keep sampled items
+#   x <- x[x$geno %in% genoS, ]
+#   # rename items to avoid computation issues in PlackettLuce
+#   x$geno <- paste0(x$family, "-" , as.integer(as.factor(x$geno)))
+#   x
+# })
+# datS <- do.call("rbind", datS)
 
-datS[-RF] <- lapply(datS[-RF], function(x){
-  set.seed(4032022)
-  # take a sample
-  genoS <- sample(unique(x$geno), samplesize)
-  # filter to keep sampled items
-  x <- x[x$geno %in% genoS, ]
-  # rename items to avoid computation issues in PlackettLuce
-  x$geno <- paste0(x$family, "-" , as.integer(as.factor(x$geno)))
-  x
-})
+# take the average per family and assess by family
+dat %>% 
+  group_by(id2, family) %>% 
+  summarise(oa = mean(oa)) %>% 
+  mutate(geno = family,
+         id = id2) %>% 
+  ungroup() ->
+  datS
 
-datS <- do.call("rbind", datS)
+datS
 
 length(unique(datS$geno))
 
@@ -126,34 +151,33 @@ itemsS <- unique(datS$geno)
 cc <- gosset:::.combn2(itemsS, 2)
 
 ncol(cc)
-
 datS <- split(datS, datS$id)
 
 pair_oa <- lapply(datS, function(y) {
   # get the rankings as pair comparisons
   # ties are not considered and will be NA's
   pair <- apply(cc, 2, function(x){
-    
+
     # take the first item in the comparison
     i <- x[1]
     # and the second one
     j <- x[2]
-    
+
     # combine the rankings for these two items
     # with i as first and j as the second colunm
     p <- c(y$oa[y$geno == i], y$oa[y$geno == j])
-    
+
     if  (length(p) != 2) {
       p <- c(0, 0)
     }
-    
+
     # if i is higher than j, add 1, this means that i beats j
     # if i is lower than j, add -1, this means that j beats i
     # if none of these options, add NA
     p <- ifelse(p[1] > p[2], 1, ifelse(p[1] < p[2] , -1, NA))
-    
+
   })
-  
+
 })
 
 pair_oa
@@ -164,21 +188,22 @@ datS <- do.call("rbind", datS)
 # convert this matrix into a paircomp object
 pair <- psychotools::paircomp(pair, labels = as.character(itemsS))
 
-# pairwises into grouped rankings 
+# pairwises into grouped rankings
 G <- as.grouped_rankings(pair)
 
+mod <- PlackettLuce(G)
+
+summary(mod, ref = "RF")
+
 # dataset with rank features 
+unique(datS$id)
+datS$gender <- ifelse(grepl("f_", datS$id), "F", "M")
+datS$location <- ifelse(grepl("_adet", datS$id), "Adet",
+                        ifelse(grepl("_kulumsa", datS$id), "Kulumsa",
+                               "Geregera")) 
+ 
 rank_features <- as.data.frame(datS[!duplicated(datS$id), c("gender","location")])
 rank_features[1:2] <- lapply(rank_features[1:2], as.factor)
-
-# dataset with the genotypes features 
-geno_features <- blups
-rownames(geno_features) <- 1:nrow(geno_features)
-
-# the formula to analyse the genotype features
-form <- formula(paste("~", paste(names(blups[-c(1)]), collapse = " + ")))
-
-form
 
 pld <- cbind(G, rank_features)
 
@@ -186,7 +211,7 @@ str(pld)
 
 pl1 <- pltree(G ~ gender + location,
               data = pld,
-              alpha = 0.05,
+              alpha = 0.01,
               minsize = 20,
               verbose = TRUE)
 
@@ -199,17 +224,40 @@ top_items(pl1)
 
 worth_map(pl1)
 
-wr <- worst_regret(pl1)
+reliability(pl1, ref = "RF")
+
+coef(pl1, log = F)
+
+# dataset with the genotypes features 
+geno_features <- blups
+names(geno_features)
+geno_features <- geno_features[,-which(grepl("geno|ril", names(geno_features)))]
+# group blups by family
+geno_features <- aggregate(. ~ family, data = geno_features, mean)
+names(geno_features)[1] <- "geno"
+
+# the formula to analyse the genotype features
+f <- formula(paste("~", paste(names(geno_features[-c(1)]), collapse = " + ")))
+
+f
 
 pl2 <- pltree(G ~ gender + location, 
-              worth = form,
-              data = list(rank_features,
+              worth = f,
+              data = list(pld,
                           geno_features),
               minsize = 20,
               verbose = TRUE)
 
 summary(pl2)
 
+coef(pl2)
+
 save(pl1, pl2, file = "output/pladmm_model.rda")
 
+
+plot(pl1)
+
+plot(pl2)
+
+class(pl2)
 
