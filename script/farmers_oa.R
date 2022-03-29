@@ -335,6 +335,23 @@ for(i in seq_along(families)) {
 }
 
 
+capture.output(print(pl1),
+               cat("\n\n"),
+               summary(pl1), 
+               cat("\n\n\n\n\n\n\n\n"),
+               print(pl2),
+               cat("\n\n"),
+               summary(pl2),
+               cat("\n\n\n\n\n\n\n\n"),
+               print(pl3),
+               cat("\n\n"),
+               summary(pl3),
+               cat("\n\n\n\n\n\n\n\n"),
+               print(pl4),
+               cat("\n\n"),
+               summary(pl4),
+               file = "output/PL_models.text")
+
 save(pl1, pl2, pl3, pl4, family_models, file = "output/PL_models.rda")
 
 

@@ -1,0 +1,179 @@
+Plackett-Luce tree
+
+Model formula:
+G ~ location + gender
+
+Fitted party:
+[1] root
+|   [2] location in Adet, Geregera
+|   |   [3] location in Adet: n = 20
+|   |               RF         N1         N3         N5         N8        N10        N16 
+|   |        0.0000000 -5.3964701 -1.1508628 -2.6686647 -0.6314516 -0.6822998 -0.2814614 
+|   |              N19        N32        N36        N45        N46        N51 
+|   |       -2.3732425  0.3522701 -3.3234659  2.8891370 -0.5877542  1.0983010 
+|   |   [4] location in Geregera: n = 20
+|   |               RF         N1         N3         N5         N8        N10        N16 
+|   |        0.0000000 -6.0717053 -4.4844031  0.9630923 -2.0925636  0.1806304  0.9367269 
+|   |              N19        N32        N36        N45        N46        N51 
+|   |       -0.2635973  0.8524325 -3.3803571 -1.4998793  0.9288475  0.1180513 
+|   [5] location in Kulumsa: n = 20
+|                RF          N1          N3          N5          N8         N10         N16 
+|         0.0000000  -3.3825393  -6.6836431  -4.7126716  -3.9241506 -10.7994993  -0.7380473 
+|               N19         N32         N36         N45         N46         N51 
+|        -4.7126716  -4.6783928  -2.3051089   3.4246429  -2.7055828   5.3726920 
+
+Number of inner nodes:    2
+Number of terminal nodes: 3
+Number of parameters per node: 13
+Objective function (negative log-likelihood): 1405.954
+$`3`
+Call: PlackettLuce(rankings = y, weights = weights, na.action = NULL, start = start)
+
+Coefficients:
+    Estimate Std. Error z value Pr(>|z|)    
+RF    0.0000         NA      NA       NA    
+N1   -5.3965     0.4900 -11.013  < 2e-16 ***
+N3   -1.1509     0.2301  -5.001 5.71e-07 ***
+N5   -2.6687     0.2714  -9.833  < 2e-16 ***
+N8   -0.6315     0.2230  -2.832  0.00462 ** 
+N10  -0.6823     0.2231  -3.058  0.00223 ** 
+N16  -0.2815     0.2221  -1.267  0.20498    
+N19  -2.3732     0.2601  -9.124  < 2e-16 ***
+N32   0.3523     0.2283   1.543  0.12288    
+N36  -3.3235     0.3010 -11.040  < 2e-16 ***
+N45   2.8891     0.3900   7.407 1.29e-13 ***
+N46  -0.5878     0.2225  -2.641  0.00826 ** 
+N51   1.0983     0.2510   4.376 1.21e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  1101.4 on 1543 degrees of freedom
+AIC:  1125.4 
+Number of iterations: 49
+
+$`4`
+Call: PlackettLuce(rankings = y, weights = weights, na.action = NULL, start = start)
+
+Coefficients:
+    Estimate Std. Error z value Pr(>|z|)    
+RF    0.0000         NA      NA       NA    
+N1   -6.0717     0.5529 -10.982  < 2e-16 ***
+N3   -4.4844     0.4150 -10.807  < 2e-16 ***
+N5    0.9631     0.2271   4.240 2.23e-05 ***
+N8   -2.0926     0.2745  -7.624 2.45e-14 ***
+N10   0.1806     0.2185   0.827 0.408493    
+N16   0.9367     0.2266   4.134 3.56e-05 ***
+N19  -0.2636     0.2200  -1.198 0.230944    
+N32   0.8524     0.2245   3.796 0.000147 ***
+N36  -3.3804     0.3436  -9.838  < 2e-16 ***
+N45  -1.4999     0.2498  -6.003 1.93e-09 ***
+N46   0.9288     0.2260   4.110 3.96e-05 ***
+N51   0.1181     0.2180   0.542 0.588102    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  1086.7 on 1544 degrees of freedom
+AIC:  1110.7 
+Number of iterations: 29
+
+$`5`
+Call: PlackettLuce(rankings = y, weights = weights, na.action = NULL, start = start)
+
+Coefficients:
+    Estimate Std. Error z value Pr(>|z|)    
+RF    0.0000         NA      NA       NA    
+N1   -3.3825     0.4093  -8.264  < 2e-16 ***
+N3   -6.6836     0.5107 -13.087  < 2e-16 ***
+N5   -4.7127     0.4284 -11.000  < 2e-16 ***
+N8   -3.9242     0.4165  -9.422  < 2e-16 ***
+N10 -10.7995     1.4895  -7.250 4.16e-13 ***
+N16  -0.7380     0.3656  -2.019 0.043501 *  
+N19  -4.7127     0.4284 -11.000  < 2e-16 ***
+N32  -4.6784     0.4278 -10.936  < 2e-16 ***
+N36  -2.3051     0.3947  -5.840 5.21e-09 ***
+N45   3.4246     0.9159   3.739 0.000185 ***
+N46  -2.7056     0.4007  -6.753 1.45e-11 ***
+N51   5.3727     1.0762   4.992 5.96e-07 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  623.83 on 1546 degrees of freedom
+AIC:  647.83 
+Number of iterations: 500
+
+
+
+
+
+Plackett-Luce tree
+
+Model formula:
+G ~ gender
+
+Fitted party:
+[1] root
+|   [2] gender in F: n = 30
+|                RF          N1          N3          N5          N8         N10         N16 
+|        0.00000000 -1.94360896 -1.64663715 -0.98425599 -0.67570170 -0.65728533  0.08974831 
+|               N19         N32         N36         N45         N46         N51 
+|       -1.34058151 -0.24768241 -1.17362141  0.48375448 -0.20634189  1.22446458 
+|   [3] gender in M: n = 30
+|               RF         N1         N3         N5         N8        N10        N16 
+|        0.0000000 -3.3639113 -2.9581821 -1.4195577 -1.9722699 -2.2656446  0.1399640 
+|              N19        N32        N36        N45        N46        N51 
+|       -1.6071505 -0.7079138 -2.4833238  0.2463506 -0.3974859  0.1740249 
+
+Number of inner nodes:    1
+Number of terminal nodes: 2
+Number of parameters per node: 13
+Objective function (negative log-likelihood): 2388.195
+$`2`
+Call: PlackettLuce(rankings = y, weights = weights, na.action = NULL, start = start)
+
+Coefficients:
+    Estimate Std. Error z value Pr(>|z|)    
+RF   0.00000         NA      NA       NA    
+N1  -1.94361    0.17646 -11.015  < 2e-16 ***
+N3  -1.64664    0.17004  -9.684  < 2e-16 ***
+N5  -0.98426    0.16001  -6.151 7.70e-10 ***
+N8  -0.67570    0.15811  -4.274 1.92e-05 ***
+N10 -0.65729    0.15801  -4.160 3.18e-05 ***
+N16  0.08975    0.15986   0.561  0.57452    
+N19 -1.34058    0.16406  -8.171 3.05e-16 ***
+N32 -0.24768    0.15786  -1.569  0.11665    
+N36 -1.17362    0.16185  -7.251 4.13e-13 ***
+N45  0.48375    0.16491   2.933  0.00335 ** 
+N46 -0.20634    0.15789  -1.307  0.19124    
+N51  1.22446    0.18506   6.616 3.68e-11 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  2593.2 on 2322 degrees of freedom
+AIC:  2617.2 
+Number of iterations: 14
+
+$`3`
+Call: PlackettLuce(rankings = y, weights = weights, na.action = NULL, start = start)
+
+Coefficients:
+    Estimate Std. Error z value Pr(>|z|)    
+RF    0.0000         NA      NA       NA    
+N1   -3.3639     0.2161 -15.563  < 2e-16 ***
+N3   -2.9582     0.2036 -14.530  < 2e-16 ***
+N5   -1.4196     0.1791  -7.928 2.23e-15 ***
+N8   -1.9723     0.1850 -10.660  < 2e-16 ***
+N10  -2.2656     0.1893 -11.968  < 2e-16 ***
+N16   0.1400     0.1805   0.776   0.4380    
+N19  -1.6072     0.1806  -8.898  < 2e-16 ***
+N32  -0.7079     0.1754  -4.037 5.42e-05 ***
+N36  -2.4833     0.1932 -12.855  < 2e-16 ***
+N45   0.2464     0.1819   1.354   0.1757    
+N46  -0.3975     0.1757  -2.263   0.0237 *  
+N51   0.1740     0.1809   0.962   0.3361    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  2183.2 on 2323 degrees of freedom
+AIC:  2207.2 
+Number of iterations: 21
+
