@@ -1,5 +1,6 @@
 # History files
 .Rhistory
+.Renviron
 .Rapp.history
 
 # Session Data files
@@ -50,3 +51,4 @@ rsconnect/
 data/
 .DS_Store
 manuscript/
+.png

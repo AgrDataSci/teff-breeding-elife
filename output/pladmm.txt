@@ -1,0 +1,97 @@
+Plackett-Luce tree
+
+Model formula:
+G ~ gender + location
+
+Fitted party:
+[1] root
+|   [2] location in Geregera: n = 20
+|        (Intercept)           bm           db           df           dh           gy           ph 
+|       -148.5714747    4.9773982  -10.3708004   -1.6362221   10.8641874  -14.1805004    0.0588666 
+|                spl          sps          tgw 
+|         14.3123429    2.0439634    0.6793065 
+|   [3] location in Adet, Kulumsa
+|   |   [4] location in Adet: n = 20
+|   |        (Intercept)           bm           db           df           dh           gy           ph 
+|   |       -11.05655590   2.10758959   0.64151622   1.48533549  -2.09999831   1.29676532   0.32509561 
+|   |                spl          sps          tgw 
+|   |        -8.56150759  -0.05739087   0.04566164 
+|   |   [5] location in Kulumsa: n = 20
+|   |        (Intercept)           bm           db           df           dh           gy           ph 
+|   |        19.56372821  14.35591138  60.01108382  -4.68248039 -54.09766291  88.58738278  -0.02879996 
+|   |                spl          sps          tgw 
+|   |         9.82577319  -0.98603597  -3.00182215 
+
+Number of inner nodes:    2
+Number of terminal nodes: 3
+Number of parameters per node: 10
+Objective function (negative log-likelihood): 2521.115
+
+
+
+$`2`
+Call: NULL
+
+Coefficients:
+              Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -148.57147         NA      NA       NA    
+bm             4.97740    1.30840   3.804 0.000142 ***
+db           -10.37080    1.49593  -6.933 4.13e-12 ***
+df            -1.63622    0.51838  -3.156 0.001597 ** 
+dh            10.86419    1.56019   6.963 3.32e-12 ***
+gy           -14.18050    2.55180  -5.557 2.74e-08 ***
+ph             0.05887    0.05792   1.016 0.309444    
+spl           14.31234    1.59542   8.971  < 2e-16 ***
+sps            2.04396    0.20055  10.192  < 2e-16 ***
+tgw            0.67931    0.08894   7.638 2.20e-14 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  1336 on NULL degrees of freedom
+AIC:  1354 
+Number of iterations: 147
+
+$`4`
+Call: NULL
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -11.05656         NA      NA       NA    
+bm            2.10759    1.23670   1.704  0.08834 .  
+db            0.64152    1.40588   0.456  0.64817    
+df            1.48534    0.50244   2.956  0.00311 ** 
+dh           -2.10000    1.45966  -1.439  0.15024    
+gy            1.29677    2.47491   0.524  0.60030    
+ph            0.32510    0.05933   5.480 4.26e-08 ***
+spl          -8.56151    1.48649  -5.760 8.43e-09 ***
+sps          -0.05739    0.18746  -0.306  0.75949    
+tgw           0.04566    0.07941   0.575  0.56527    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  1333.8 on NULL degrees of freedom
+AIC:  1351.8 
+Number of iterations: 160
+
+$`5`
+Call: NULL
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  19.5637         NA      NA       NA    
+bm           14.3559     2.4011   5.979 2.25e-09 ***
+db           60.0111     6.0045   9.994  < 2e-16 ***
+df           -4.6825     1.2604  -3.715 0.000203 ***
+dh          -54.0977     5.1746 -10.455  < 2e-16 ***
+gy           88.5874     9.5772   9.250  < 2e-16 ***
+ph           -0.0288     0.1250  -0.230 0.817720    
+spl           9.8258     3.6772   2.672 0.007538 ** 
+sps          -0.9860     0.5664  -1.741 0.081693 .  
+tgw          -3.0018     0.2734 -10.981  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  2372.5 on NULL degrees of freedom
+AIC:  2390.5 
+Number of iterations: 102
+
