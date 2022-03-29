@@ -263,6 +263,7 @@ pl4 <- pltree(G ~ gender,
               verbose = TRUE)
 
 
+# write outputs
 
 save(pl1, pl2, pl3, pl4, file = "output/PL_models.rda")
 
@@ -334,7 +335,7 @@ for(i in seq_along(families)) {
   
 }
 
-
+# write (update) outputs
 capture.output(print(pl1),
                cat("\n\n"),
                summary(pl1), 
@@ -353,6 +354,24 @@ capture.output(print(pl1),
                file = "output/PL_models.text")
 
 save(pl1, pl2, pl3, pl4, family_models, file = "output/PL_models.rda")
+
+# get the top items in each family 
+best_families <- data.frame()
+for (i in seq_along(families)) {
+  
+  coef_i <- coef(family_models[[i]], log = FALSE)
+  
+  b_i <- data.frame(family = families[i],
+                    geno = names(rev(sort(coef_i))[1:20]),
+                    worth = as.vector(rev(sort(coef_i))[1:20]),
+                    rank = 1:20)
+  
+  best_families <- rbind(best_families, b_i)
+    
+}
+
+write.csv(best_families, file = "output/top20_by_family.csv", row.names = FALSE)
+
 
 
 

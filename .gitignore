@@ -51,4 +51,6 @@ rsconnect/
 data/
 .DS_Store
 manuscript/
-.png
+*.png
+*.rda
+
