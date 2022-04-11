@@ -12,7 +12,6 @@ ggsave(filename = "output/pltree_location.png",
 ggsave(filename = "output/pltree_gender.png", 
        plot = plot(pl2), width = 25, height = 25, units = "cm", dpi = 500)
 
-
 ggsave(filename = "output/worth_map_location.png", 
        plot = worth_map(pl1) + theme_bw(), width = 25, height = 18, units = "cm", dpi = 500)
 
