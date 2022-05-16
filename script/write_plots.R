@@ -6,6 +6,9 @@ library("gosset")
 
 load("output/PL_models.rda")
 
+
+
+
 ggsave(filename = "output/pltree_location.png", 
        plot = plot(pl1), width = 30, height = 25, units = "cm", dpi = 500)
 

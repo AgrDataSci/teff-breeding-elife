@@ -3,6 +3,56 @@ library("PlackettLuce")
 library("janitor")
 library("tidyverse")
 library("gosset")
+library("gtools")
+
+pladmm_coeffs <- function(object, ...) {
+  
+  # Extract ids from terminal nodes
+  node_id <- partykit::nodeids(object, terminal = TRUE)
+  
+  # get models from each node
+  nodes <- list()
+  for (i in seq_along(node_id)) {
+    obj_i <- object[[ node_id[i] ]]$node$info$object
+    coefs <- coef(obj_i)
+    coefficients <- matrix(NA, nrow = length(coefs), ncol = 4L, 
+                           dimnames = list(names(coefs), c("Estimate", "Std. Error", 
+                                                           "z value", "Pr(>|z|)")))
+    coefficients[, 1L] <- coefs
+    se <- sqrt(diag(vcov(obj_i)))
+    coefficients[names(se), 2L] <- se
+    coefficients[, 3L] <- coefficients[, 1L]/coefficients[, 2L]
+    coefficients[, 4L] <- 2L * pnorm(-abs(coefficients[, 3L]))
+    
+    coefficients <- as.data.frame(coefficients)
+    
+    coefficients[, 5] <- gtools::stars.pval(coefficients[, 4])
+    
+    coefficients[, 4] <- formatC(coefficients[, 4], format = "e", digits = 2)
+    
+    coefficients[, 6] <- node_id[i]
+    
+    coefficients[, 7] <- rownames(coefficients)
+    
+    rownames(coefficients) <- 1:nrow(coefficients)
+    
+    coefficients <- coefficients[,c(6, 7, 1:5)]
+    
+    names(coefficients)[1] <- "Node"
+    
+    names(coefficients)[c(2, 7)] <- ""
+    
+    nodes[[i]] <- coefficients
+    
+  }
+  
+  result <- do.call("rbind", nodes)
+  
+  rownames(result) <- 1:nrow(result)
+  
+  result
+  
+}
 
 # read the data
 load("data/phenotypic.data.EtNAM.Rdata")
@@ -190,6 +240,7 @@ datS$location <- ifelse(grepl("_adet", datS$id), "Adet",
                                "Geregera")) 
  
 rank_features <- as.data.frame(datS[!duplicated(datS$id), c("gender","location")])
+names(rank_features) <- c("Gender", "Location")
 rank_features[1:2] <- lapply(rank_features[1:2], as.factor)
 
 pld <- cbind(G, rank_features)
@@ -204,14 +255,18 @@ pl <- pltree(G ~ 1,
              verbose = TRUE)
 
 # model with location and gender 
-pl1 <- pltree(G ~ location + gender,
+pl1 <- pltree(G ~ Location + Gender,
               data = pld,
-              alpha = 0.01,
+              alpha = 0.05,
+              gamma = TRUE,
               minsize = 10,
               verbose = TRUE)
 
+plot(pl1)
+plot(pl3)
+
 # model with gender only
-pl2 <- pltree(G ~ gender,
+pl2 <- pltree(G ~ Gender,
                data = pld,
                alpha = 0.01,
                minsize = 10,
@@ -227,6 +282,10 @@ top_items(pl1)
 
 worth_map(pl1)
 
+# ......................................
+# ......................................
+# ......................................
+# PL model with item covariates ####
 # dataset with the genotypes features 
 geno_features <- blups
 names(geno_features)
@@ -241,18 +300,58 @@ f <- formula(paste("~", paste(names(geno_features[-c(1)]), collapse = " + ")))
 
 f
 # PLadmm with location and gender
-pl3 <- pltree(G ~ gender + location, 
+pl3 <- pltree(G ~ Gender + Location, 
               worth = f,
               data = list(pld,
                           geno_features),
-              minsize = 20,
+              minsize = 10,
               verbose = TRUE)
 
 summary(pl3)
-
+plot(pl3)
 coef(pl3)
 
+summary(pl3)
 
+nodes <- predict(pl3, type = "node")
+
+node_ids <- sort(unique(nodes))
+
+models <- list()
+nobs <- integer()
+
+for (i in seq_along(node_ids)) {
+  x <- pld[nodes == node_ids[i], ]
+  nobs <- cbind(nobs, nrow(x))
+  x <- PlackettLuce(x$G)
+  models[[i]] <- x
+}
+
+branch <- gosset:::build_tree_branches(pl3)
+node <- gosset:::build_tree_nodes(models, log = TRUE,
+                                  node.ids = node_ids, n.obs = nobs)
+
+tree <- branch / node
+
+tree <- 
+  tree +
+  theme(axis.text.x = element_text(size = 12, angle = 45))
+
+
+tree
+
+pl3_coef <- pladmm_coeffs(pl3)
+
+write.csv(pl3_coef, file = "output/pltree-farmers-choices.csv", row.names = FALSE)
+
+ggsave("output/pltree-farmers-choices.png",
+       width = 25,
+       height = 25,
+       units = "cm",
+       dpi = 600)
+
+capture.output(summary(pl3),
+               file = "output/pltree-farmers-choices.txt")
 
 # PLadmm model with gender only 
 pl4 <- pltree(G ~ gender, 
