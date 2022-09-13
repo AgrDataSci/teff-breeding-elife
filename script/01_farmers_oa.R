@@ -1,9 +1,11 @@
-# Coerce farmers evaluation to rankings
+# Assess farmers evaluation of genotypes 
+# using PlackettLuce model
 library("PlackettLuce")
 library("janitor")
 library("tidyverse")
 library("gosset")
 library("gtools")
+library("lme4")
 
 pladmm_coeffs <- function(object, ...) {
   
@@ -132,7 +134,7 @@ blups$family[!is.na(f)] <- paste0("N", f[!is.na(f)])
 
 unique(blups$family)
 
-# get an id which is the combination of farmer , repetition and location
+# get the combination of farmer , repetition and location as an id
 dat$id2 <- as.factor(paste(dat$farmer, dat$rep, dat$location, sep = "_"))
 
 dat$id <- as.integer(dat$id2)
@@ -228,9 +230,15 @@ pair <- psychotools::paircomp(pair, labels = itemsS_levels)
 # pairwises into grouped rankings
 G <- as.grouped_rankings(pair)
 
+G
+
 mod <- PlackettLuce(G)
 
-summary(mod, ref = "RF")
+reference <- "RF"
+
+summary(mod, ref = reference)
+
+re <- reliability(mod, ref = reference)
 
 # dataset with rank features 
 unique(datS$id)
@@ -241,6 +249,7 @@ datS$location <- ifelse(grepl("_adet", datS$id), "Adet",
  
 rank_features <- as.data.frame(datS[!duplicated(datS$id), c("gender","location")])
 names(rank_features) <- c("Gender", "Location")
+rank_features$Gender <- ifelse(rank_features$Gender == "M", "Man", "Woman")
 rank_features[1:2] <- lapply(rank_features[1:2], as.factor)
 
 pld <- cbind(G, rank_features)
@@ -257,13 +266,12 @@ pl <- pltree(G ~ 1,
 # model with location and gender 
 pl1 <- pltree(G ~ Location + Gender,
               data = pld,
-              alpha = 0.05,
+              alpha = 0.01,
               gamma = TRUE,
               minsize = 10,
               verbose = TRUE)
 
-plot(pl1)
-plot(pl3)
+plot(pl1, ref = reference)
 
 # model with gender only
 pl2 <- pltree(G ~ Gender,
@@ -276,12 +284,6 @@ deviance(pl)
 deviance(pl1)
 deviance(pl2)
 
-plot(pl1)
-
-top_items(pl1)
-
-worth_map(pl1)
-
 # ......................................
 # ......................................
 # ......................................
@@ -291,19 +293,60 @@ geno_features <- blups
 names(geno_features)
 geno_features <- geno_features[,-which(grepl("geno|ril", names(geno_features)))]
 
+
+# # group blups by family
+geno_features <- blups
+names(geno_features)
+geno_features <- geno_features[,-which(grepl("geno|ril", names(geno_features)))]
+
 # group blups by family
-geno_features <- aggregate(. ~ family, data = geno_features, mean)
-names(geno_features)[1] <- "geno"
+genotype_features <- aggregate(. ~ family, data = geno_features, mean)
+names(genotype_features)[1] <- "geno"
 
 # the formula to analyse the genotype features
-f <- formula(paste("~", paste(names(geno_features[-c(1)]), collapse = " + ")))
+f <- formula(paste("~", paste(names(genotype_features[-c(1)]), collapse = " + ")))
 
 f
+
+# head(geno_features)
+# 
+# geno_features$family <- factor(geno_features$family, 
+#                                levels = union("RF", unique(geno_features$family)))
+# 
+# genotype_features <- data.frame(genotype = unique(geno_features$family))
+# 
+# metrics <- names(geno_features)[-1]
+# 
+# for(i in seq_along(metrics)){
+#   
+#   form <- paste0(metrics[i], " ~ family")
+#   
+#   form <- as.formula(form)
+#   
+#   mod_i <- lm(form, data = geno_features)
+#   
+#   coeffs <- as.vector(coef(mod_i))
+#   
+#   coeffs[1] <- 0
+#   
+#   genotype_features <- cbind(genotype_features, coeffs)
+# 
+# }
+# 
+# names(genotype_features)[-1] <- metrics
+# 
+# genotype_features
+# 
+# # the formula to analyse the genotype features
+# f <- formula(paste("~", paste(metrics, collapse = " + ")))
+# 
+# f
+
 # PLadmm with location and gender
 pl3 <- pltree(G ~ Gender + Location, 
               worth = f,
               data = list(pld,
-                          geno_features),
+                          genotype_features),
               minsize = 10,
               verbose = TRUE)
 
@@ -328,14 +371,16 @@ for (i in seq_along(node_ids)) {
 }
 
 branch <- gosset:::build_tree_branches(pl3)
-node <- gosset:::build_tree_nodes(models, log = TRUE,
+node <- gosset:::build_tree_nodes(models,
+                                  ref = reference,
+                                  log = TRUE,
                                   node.ids = node_ids, n.obs = nobs)
 
 tree <- branch / node
 
-tree <- 
-  tree +
-  theme(axis.text.x = element_text(size = 12, angle = 45))
+tree <-
+tree +
+theme(axis.text.x = element_text(size = 12, angle = 45))
 
 
 tree
@@ -350,127 +395,125 @@ ggsave("output/pltree-farmers-choices.png",
        units = "cm",
        dpi = 600)
 
+ggsave("output/pltree-farmers-choices.svg",
+       width = 25,
+       height = 25,
+       units = "cm",
+       dpi = 600)
+
 capture.output(summary(pl3),
                file = "output/pltree-farmers-choices.txt")
 
-# PLadmm model with gender only 
-pl4 <- pltree(G ~ gender, 
-              worth = f,
-              data = list(pld,
-                          geno_features),
-              minsize = 20,
-              verbose = TRUE)
-
-
 # write outputs
 
-save(pl1, pl2, pl3, pl4, file = "output/PL_models.rda")
-
-# ...........................................
-# ...........................................
-# ...........................................
-# Run within families to get the performance of each genotype
-# PL models by family 
-families <- itemsS_levels[-1]
-
-family_models <- list()
-
-for(i in seq_along(families)) {
-  dat_i <- dat[dat$family == families[i], ]
-  
-  # remove the parental line
-  dat_i <- dat_i[!dat_i$geno %in% families[i], ]
-  
-  items_i <- unique(dat_i$geno)
-  
-  # make pairwise comparisons
-  cc <- gosset:::.combn2(items_i, 2)
-  
-  ncol(cc)
-  
-  # split by ids (farmer)
-  dat_i <- split(dat_i, dat_i$id)
-  
-  pair_oa <- lapply(dat_i, function(y) {
-    # get the rankings as pair comparisons
-    # ties are not considered and will be NA's
-    pair <- apply(cc, 2, function(x){
-      
-      # take the first item in the comparison
-      i <- x[1]
-      # and the second one
-      j <- x[2]
-      
-      # combine the rankings for these two items
-      # with i as first and j as the second colunm
-      p <- c(y$oa[y$geno == i], y$oa[y$geno == j])
-      
-      if  (length(p) != 2) {
-        p <- c(0, 0)
-      }
-      
-      # if i is higher than j, add 1, this means that i beats j
-      # if i is lower than j, add -1, this means that j beats i
-      # if none of these options, add NA
-      p <- ifelse(p[1] > p[2], 1, ifelse(p[1] < p[2] , -1, NA))
-      
-    })
-    
-  })
-  
-  pair_oa
-  
-  pair <- do.call("rbind", pair_oa)
-  
-  # convert this matrix into a paircomp object
-  pair <- psychotools::paircomp(pair, labels = items_i)
-  
-  # pairwises into grouped rankings
-  G <- as.grouped_rankings(pair)
-  
-  mod <- PlackettLuce(G)
-  
-  family_models[[i]] <- mod
-  
-}
-
-# write (update) outputs
-capture.output(print(pl1),
-               cat("\n\n"),
-               summary(pl1), 
-               cat("\n\n\n\n\n\n\n\n"),
-               print(pl2),
-               cat("\n\n"),
-               summary(pl2),
-               cat("\n\n\n\n\n\n\n\n"),
-               print(pl3),
-               cat("\n\n"),
-               summary(pl3),
-               cat("\n\n\n\n\n\n\n\n"),
-               print(pl4),
-               cat("\n\n"),
-               summary(pl4),
-               file = "output/PL_models.text")
-
-save(pl1, pl2, pl3, pl4, family_models, file = "output/PL_models.rda")
-
-# get the top items in each family 
-best_families <- data.frame()
-for (i in seq_along(families)) {
-  
-  coef_i <- coef(family_models[[i]], log = FALSE)
-  
-  b_i <- data.frame(family = families[i],
-                    geno = names(rev(sort(coef_i))[1:20]),
-                    worth = as.vector(rev(sort(coef_i))[1:20]),
-                    rank = 1:20)
-  
-  best_families <- rbind(best_families, b_i)
-    
-}
-
-write.csv(best_families, file = "output/top20_by_family.csv", row.names = FALSE)
+save(pl1, pl2, pl3, file = "output/PL_models.rda")
 
 
-
-
+# # ...........................................
+# # ...........................................
+# # ...........................................
+# # Run within families to get the performance of each genotype
+# # PL models by family 
+# families <- itemsS_levels[-1]
+# 
+# family_models <- list()
+# 
+# for(i in seq_along(families)) {
+#   dat_i <- dat[dat$family == families[i], ]
+#   
+#   # remove the parental line
+#   dat_i <- dat_i[!dat_i$geno %in% families[i], ]
+#   
+#   items_i <- unique(dat_i$geno)
+#   
+#   # make pairwise comparisons
+#   cc <- gosset:::.combn2(items_i, 2)
+#   
+#   ncol(cc)
+#   
+#   # split by ids (farmer)
+#   dat_i <- split(dat_i, dat_i$id)
+#   
+#   pair_oa <- lapply(dat_i, function(y) {
+#     # get the rankings as pair comparisons
+#     # ties are not considered and will be NA's
+#     pair <- apply(cc, 2, function(x){
+#       
+#       # take the first item in the comparison
+#       i <- x[1]
+#       # and the second one
+#       j <- x[2]
+#       
+#       # combine the rankings for these two items
+#       # with i as first and j as the second colunm
+#       p <- c(y$oa[y$geno == i], y$oa[y$geno == j])
+#       
+#       if  (length(p) != 2) {
+#         p <- c(0, 0)
+#       }
+#       
+#       # if i is higher than j, add 1, this means that i beats j
+#       # if i is lower than j, add -1, this means that j beats i
+#       # if none of these options, add NA
+#       p <- ifelse(p[1] > p[2], 1, ifelse(p[1] < p[2] , -1, NA))
+#       
+#     })
+#     
+#   })
+#   
+#   pair_oa
+#   
+#   pair <- do.call("rbind", pair_oa)
+#   
+#   # convert this matrix into a paircomp object
+#   pair <- psychotools::paircomp(pair, labels = items_i)
+#   
+#   # pairwises into grouped rankings
+#   G <- as.grouped_rankings(pair)
+#   
+#   mod <- PlackettLuce(G)
+#   
+#   family_models[[i]] <- mod
+#   
+# }
+# 
+# # write (update) outputs
+# capture.output(print(pl1),
+#                cat("\n\n"),
+#                summary(pl1), 
+#                cat("\n\n\n\n\n\n\n\n"),
+#                print(pl2),
+#                cat("\n\n"),
+#                summary(pl2),
+#                cat("\n\n\n\n\n\n\n\n"),
+#                print(pl3),
+#                cat("\n\n"),
+#                summary(pl3),
+#                cat("\n\n\n\n\n\n\n\n"),
+#                print(pl4),
+#                cat("\n\n"),
+#                summary(pl4),
+#                file = "output/PL_models.text")
+# 
+# save(pl1, pl2, pl3, pl4, family_models, file = "output/PL_models.rda")
+# 
+# # get the top items in each family 
+# best_families <- data.frame()
+# for (i in seq_along(families)) {
+#   
+#   coef_i <- coef(family_models[[i]], log = FALSE)
+#   
+#   b_i <- data.frame(family = families[i],
+#                     geno = names(rev(sort(coef_i))[1:20]),
+#                     worth = as.vector(rev(sort(coef_i))[1:20]),
+#                     rank = 1:20)
+#   
+#   best_families <- rbind(best_families, b_i)
+#     
+# }
+# 
+# write.csv(best_families, file = "output/top20_by_family.csv", row.names = FALSE)
+# 
+# 
+# 
+# 

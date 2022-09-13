@@ -24,28 +24,6 @@ $`5`
 Call: NULL
 
 Coefficients:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  0.81446         NA      NA       NA    
-bm           1.44654    1.62779   0.889   0.3742    
-db          -0.43421    1.86193  -0.233   0.8156    
-df           0.76407    0.64453   1.185   0.2358    
-dh          -0.26487    1.93722  -0.137   0.8912    
-gy          -0.79449    3.24994  -0.244   0.8069    
-ph           0.19690    0.07670   2.567   0.0102 *  
-spl         -8.75996    1.95478  -4.481 7.42e-06 ***
-sps          0.05036    0.24668   0.204   0.8382    
-tgw          0.13030    0.10497   1.241   0.2145    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual deviance:  753.38 on NULL degrees of freedom
-AIC:  771.38 
-Number of iterations: 119
-
-$`6`
-Call: NULL
-
-Coefficients:
              Estimate Std. Error z value Pr(>|z|)    
 (Intercept) -20.60365         NA      NA       NA    
 bm            3.32795    2.10568   1.580 0.114001    
@@ -64,29 +42,29 @@ Residual deviance:  494.88 on NULL degrees of freedom
 AIC:  512.88 
 Number of iterations: 117
 
-$`8`
+$`6`
 Call: NULL
 
 Coefficients:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  77.5553         NA      NA       NA    
-bm           20.5686     6.5620   3.135  0.00172 ** 
-db           57.1690    11.8402   4.828 1.38e-06 ***
-df           -4.4053     1.7135  -2.571  0.01014 *  
-dh          -51.7161    10.7733  -4.800 1.58e-06 ***
-gy           79.9241    10.3538   7.719 1.17e-14 ***
-ph           -0.2162     0.1593  -1.358  0.17461    
-spl           4.8684     5.3719   0.906  0.36479    
-sps          -2.0270     1.1734  -1.728  0.08408 .  
-tgw          -3.3555     0.6863  -4.889 1.01e-06 ***
+(Intercept)  0.81446         NA      NA       NA    
+bm           1.44654    1.62779   0.889   0.3742    
+db          -0.43421    1.86193  -0.233   0.8156    
+df           0.76407    0.64453   1.185   0.2358    
+dh          -0.26487    1.93722  -0.137   0.8912    
+gy          -0.79449    3.24994  -0.244   0.8069    
+ph           0.19690    0.07670   2.567   0.0102 *  
+spl         -8.75996    1.95478  -4.481 7.42e-06 ***
+sps          0.05036    0.24668   0.204   0.8382    
+tgw          0.13030    0.10497   1.241   0.2145    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual deviance:  1157 on NULL degrees of freedom
-AIC:  1175 
-Number of iterations: 23
+Residual deviance:  753.38 on NULL degrees of freedom
+AIC:  771.38 
+Number of iterations: 119
 
-$`9`
+$`8`
 Call: NULL
 
 Coefficients:
@@ -107,4 +85,26 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance:  1141.8 on NULL degrees of freedom
 AIC:  1159.8 
 Number of iterations: 501
+
+$`9`
+Call: NULL
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  77.5553         NA      NA       NA    
+bm           20.5686     6.5620   3.135  0.00172 ** 
+db           57.1690    11.8402   4.828 1.38e-06 ***
+df           -4.4053     1.7135  -2.571  0.01014 *  
+dh          -51.7161    10.7733  -4.800 1.58e-06 ***
+gy           79.9241    10.3538   7.719 1.17e-14 ***
+ph           -0.2162     0.1593  -1.358  0.17461    
+spl           4.8684     5.3719   0.906  0.36479    
+sps          -2.0270     1.1734  -1.728  0.08408 .  
+tgw          -3.3555     0.6863  -4.889 1.01e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual deviance:  1157 on NULL degrees of freedom
+AIC:  1175 
+Number of iterations: 23
 

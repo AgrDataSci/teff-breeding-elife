@@ -1,7 +1,7 @@
 library("readxl")
 library("janitor")
 library("tidyverse")
-#remotes::install_github("CIAT-DAPA/analogues")
+# remotes::install_github("CIAT-DAPA/analogues", update = "never")
 library("analogues")
 library("sf")
 library("climatrends")
@@ -99,27 +99,19 @@ ggplot() +
 
 g
 
-ggsave(filename = "manuscript/similarity_map.png", 
+ggsave(filename = "output/similarity_map.png", 
        plot = g,
        dpi = 600,
        width = 20,
        height = 20,
        units = "cm")
 
-ggsave(filename = "manuscript/similarity_map.pdf", 
+ggsave(filename = "output/similarity_map.pdf", 
        plot = g,
        dpi = 1000,
        width = 20,
        height = 20,
        units = "cm")
-
-
-
-# now perform the characterization of trials during the experiment
-temperature(dat[,c("long", "lat")], 
-            day.one = dat$planting_date, 
-            span = dat$harvesting_date - dat$planting_date)
-
 
 
 
