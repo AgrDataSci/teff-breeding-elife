@@ -1,6 +1,7 @@
 # Assess farmers evaluation of genotypes 
 # using PlackettLuce model
 library("PlackettLuce")
+library("multcompView")
 library("janitor")
 library("tidyverse")
 library("gosset")
@@ -343,6 +344,10 @@ f
 # f
 
 # PLadmm with location and gender
+lvls <- c("RF", "N1", "N3", "N5", "N8",
+          "N10", "N16", "N19", "N32", "N36",
+          "N45", "N45", "N51")
+
 pl3 <- pltree(G ~ Gender + Location, 
               worth = f,
               data = list(pld,
@@ -374,13 +379,16 @@ branch <- gosset:::build_tree_branches(pl3)
 node <- gosset:::build_tree_nodes(models,
                                   ref = reference,
                                   log = TRUE,
-                                  node.ids = node_ids, n.obs = nobs)
+                                  multcomp = FALSE,
+                                  node.ids = node_ids,
+                                  n.obs = nobs,
+                                  levels = rev(itemsS_levels))
 
 tree <- branch / node
 
 tree <-
 tree +
-theme(axis.text.x = element_text(size = 12, angle = 45))
+theme(axis.text.x = element_text(size = 12, angle = 0))
 
 
 tree
@@ -390,13 +398,13 @@ pl3_coef <- pladmm_coeffs(pl3)
 write.csv(pl3_coef, file = "output/pltree-farmers-choices.csv", row.names = FALSE)
 
 ggsave("output/pltree-farmers-choices.png",
-       width = 25,
+       width = 28,
        height = 25,
        units = "cm",
        dpi = 600)
 
 ggsave("output/pltree-farmers-choices.svg",
-       width = 25,
+       width = 28,
        height = 25,
        units = "cm",
        dpi = 600)
